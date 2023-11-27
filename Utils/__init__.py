@@ -21,6 +21,16 @@ class Rectangle():
     def collidepoint(self, point : Point):
         return self.x < point.x < self.x + self.w and self.y < point.y < self.y + self.h
 
+    def colliderect(self, rect):
+        return (
+                self.x < rect.x + rect.w and
+                self.x + self.w > rect.x and
+                self.y < rect.y + rect.h and
+                self.y + self.h > rect.y
+                )
+
+
+
 class Color():
     def __init__(self, r, g, b):
         self.r = r
@@ -46,8 +56,13 @@ class Text:
         self.y = y
         self.text = text
 
+class Definitions:
+    gravity = 0.001
+    velocity = 0.2
+
+
 class Window():
-    width = 800
+    width = 480
     height = 720
     dimensions = (width, height)
     center = (dimensions[0]/2, dimensions[1]/2)

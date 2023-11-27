@@ -2,8 +2,8 @@ from Utils import Rectangle, Color, Window
 import random
 
 class Pipe():
-    width = 100
-    aperture = 100
+    width = 90
+    aperture = 150
     capstone_diff = 15
     capstone_width = width + 2*capstone_diff
     color = Color(0, 255, 0)
@@ -23,17 +23,17 @@ class Pipe():
         self.rectangles[Pipe.Enum.Capstone_Bottom] = Rectangle(Window.width - self.capstone_diff, self.rectangles[1].y, self.capstone_width, self.capstone_diff)
         self.hvelocity = hvelocity
 
-    def move(self):
+    def update(self):
         for rectangle in self.rectangles:
             rectangle.x -= self.hvelocity
 
 class HardPipe(Pipe) :
     def __init__(self, hvelocity):
         super().__init__(hvelocity)
-        self.vvelocity = (random.random() * 1 - 0.5)
+        self.vvelocity = (random.random() * 0.5 - 0.25)
 
-    def move(self):
-        super().move()
+    def update(self):
+        super().update()
         self.rectangles[Pipe.Enum.Top].h += self.vvelocity
         self.rectangles[Pipe.Enum.Capstone_Top].y += self.vvelocity
         self.rectangles[Pipe.Enum.Bottom].y += self.vvelocity
