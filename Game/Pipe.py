@@ -1,0 +1,45 @@
+from Utils import Rectangle, Color, Window
+import random
+
+class Pipe():
+    width = 100
+    aperture = 100
+    capstone_diff = 15
+    capstone_width = width + 2*capstone_diff
+    color = Color(0, 255, 0)
+
+    class Enum:
+        Top = 0
+        Bottom = 1
+        Capstone_Top = 2
+        Capstone_Bottom = 3
+
+    def __init__(self, hvelocity):
+        self.seed = random.randint(self.aperture, Window.height - self.aperture)
+        self.rectangles = [None] * 4
+        self.rectangles[Pipe.Enum.Top] = Rectangle(Window.width, 0, self.width, self.seed - self.aperture)
+        self.rectangles[Pipe.Enum.Bottom] = Rectangle(Window.width, self.seed + self.aperture, self.width, Window.height)
+        self.rectangles[Pipe.Enum.Capstone_Top] = Rectangle(Window.width - self.capstone_diff, self.rectangles[0].h, self.capstone_width, self.capstone_diff)
+        self.rectangles[Pipe.Enum.Capstone_Bottom] = Rectangle(Window.width - self.capstone_diff, self.rectangles[1].y, self.capstone_width, self.capstone_diff)
+        self.hvelocity = hvelocity
+
+    def move(self):
+        for rectangle in self.rectangles:
+            rectangle.x -= self.hvelocity
+
+class HardPipe(Pipe) :
+    def __init__(self, hvelocity):
+        super().__init__(hvelocity)
+        self.vvelocity = (random.random() * 1 - 0.5)
+
+    def move(self):
+        super().move()
+        self.rectangles[Pipe.Enum.Top].h += self.vvelocity
+        self.rectangles[Pipe.Enum.Capstone_Top].y += self.vvelocity
+        self.rectangles[Pipe.Enum.Bottom].y += self.vvelocity
+        self.rectangles[Pipe.Enum.Capstone_Bottom].y += self.vvelocity
+
+        if(self.rectangles[Pipe.Enum.Capstone_Bottom].y > Window.height or self.rectangles[Pipe.Enum.Capstone_Top].y < 0):
+            self.vvelocity *= -1
+
+
