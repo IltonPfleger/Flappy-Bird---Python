@@ -1,7 +1,7 @@
-from Utils import Rectangle, Color, Window
+from Utils import Rectangle, Color, Window, Image
 
 class Ground:
     sprite = "Images/ground.png"
+    height = 100
     def __init__(self):
-        height = 100
-        self.rectangles = [Rectangle(0, Window.height - height, Window.width, height)]
+        self.image = Image(Ground.sprite, Rectangle(0, Window.height - Ground.height, Window.width, Ground.height))

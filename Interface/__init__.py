@@ -1,26 +1,29 @@
-from Utils import Rectangle, Color, Button, Text, Window, Point
+from Utils import Rectangle, Color, Button, Text, TextButton, Window, Point, Image
 from Game import Game, Bird
+from Game.Cenário.Pipe import Pipe, HardPipe
+from Game.Cenário.Ground import Ground
 import pygame
 
 class Interface():
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode(Window.dimensions)
-        self.game = Game()
+        self.screen = pygame.display.set_mode((Window.width, Window.height))
         self.mouse = None
         self.click = False
-        self.font = pygame.font.SysFont(None, 30)
+        self.key = False
         self.sprites = {}
-        self.load()
+        self.load(Image(Ground.sprite, Rectangle(0, 0, Window.width, Ground.height)))
+        self.game = Game()
+        self.load(Image(Bird.sprite, self.game.birds[0].rectangle))
 
-    def load(self):
-        ground = self.game.ground
-        bird = self.game.birds[0]
-        self.sprites[bird.sprite] = pygame.transform.scale(pygame.image.load(bird.sprite), (bird.rectangles[0].w, bird.rectangles[0].h))
-        self.sprites[ground.sprite] = pygame.transform.scale(pygame.image.load(ground.sprite), (ground.rectangles[0].w, ground.rectangles[0].h))
+    def load(self, image : Image):
+        self.sprites[image.dir] = pygame.transform.scale(pygame.image.load(image.dir), (image.rectangle.w, image.rectangle.h))
 
-    def image(self, surface : pygame.surface.Surface, r : Rectangle):
-        self.screen.blit(surface, r)
+    def image(self, image, content = None, rectangle = None):
+        if(content != None):
+            self.screen.blit(content, rectangle)
+        else:
+            self.screen.blit(self.sprites[image.dir], image.rectangle.tuple)
 
     def rectangle(self, r : Rectangle, c : Color):
         pygame.draw.rect(self.screen, c.tuple, r.tuple)
@@ -28,41 +31,63 @@ class Interface():
     def button(self, b : Button):
         self.rectangle(b.rectangle, b.color)
 
+    def textButton(self, b: button):
+        self.rectangle(b.rectangle, b.color)
+        self.text(b.text)
+
     def text(self, t : Text):
-        surface = self.font.render(t.text, True, (0, 0, 0))
-        rectangle = surface.get_rect(topleft=(t.x, t.y))
+        font = pygame.font.SysFont(None, t.size)
+        surface = font.render(t.text, True, t.color.tuple)
+        rectangle = None
+        if t.align == "topleft":
+            rectangle = surface.get_rect(topleft=(t.x, t.y))
+        else:
+            rectangle = surface.get_rect(center=(t.x, t.y))
         self.screen.blit(surface, rectangle)
+
+    def bird(self, bird : Bird):
+        angled = pygame.transform.rotate(self.sprites[Bird.sprite], bird.velocity * 10)
+        rectangle = angled.get_rect(center=pygame.Rect(bird.rectangle.tuple).center)
+        self.image(Image("", rectangle), angled, rectangle)
+
+    def pipe(self, pipe : Pipe):
+        for rectangle in pipe.rectangles:
+            self.rectangle(rectangle, pipe.color)
 
     def loop(self):
         while True:
             self.click = False
+            self.key = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.click = True
+                if event.type == pygame.KEYDOWN:
+                    self.key = event.key
 
             pygame.display.flip()
             self.mouse = pygame.mouse.get_pos()
             self.screen.fill(Window.background.tuple)
-            self.game.update(Point(self.mouse[0], self.mouse[1]), self.click)
 
-            for pipe in self.game.pipes:
-                for rectangle in pipe.rectangles:
-                    self.rectangle(rectangle, pipe.color)
+            if not self.game.update(Point(self.mouse[0], self.mouse[1]), self.click, self.key):
+                exit()
 
-            for bird in self.game.birds:
-                angled = pygame.transform.rotate(self.sprites[Bird.sprite], bird.velocity * 10)
-                rectangle = angled.get_rect(center=pygame.Rect(bird.rectangles[0].tuple).center)
-                self.image(angled, rectangle)
- 
-            for button in self.game.buttons:
-                self.button(button)
-            for text in self.game.texts:
-                self.text(text)
+            for obj in self.game.renderables():
+                if isinstance(obj, Bird):
+                    self.bird(obj)
+                if isinstance(obj, Pipe) or isinstance(obj, HardPipe):
+                    self.pipe(obj)
+                if isinstance(obj, Button):
+                    self.button(obj)
+                if isinstance(obj, Text):
+                    self.text(obj)
+                if isinstance(obj, Image):
+                    self.image(obj)
+                if isinstance(obj, TextButton):
+                    self.textButton(obj)
 
-            self.image(self.sprites[self.game.ground.sprite], self.game.ground.rectangles[0].tuple)
 
     def run(self):
         self.loop()

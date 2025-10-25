@@ -29,8 +29,6 @@ class Rectangle():
                 self.y + self.h > rect.y
                 )
 
-
-
 class Color():
     def __init__(self, r, g, b):
         self.r = r
@@ -41,6 +39,24 @@ class Color():
     def tuple(self):
         return (self.r, self.g, self.b)
 
+class Image:
+    def __init__(self, dir : str, rectangle : Rectangle):
+        self.dir = dir
+        self.rectangle = rectangle
+
+class Text:
+    SMALL=15
+    NORMAL=30
+    BIG=60
+
+    def __init__(self, text : str, color : Color, size = NORMAL, x = 0, y = 0, align = "topleft"):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.align = align
+        self.text = text
+        self.color = color
+
 class Button:
     def __init__(self, rectangle : Rectangle, color : Color, action):
         self.action = action
@@ -50,20 +66,16 @@ class Button:
     def action(self):
         self.action()
 
-class Text:
-    def __init__(self, text : str, x, y):
-        self.x = x
-        self.y = y
+class TextButton(Button):
+    def __init__(self, rectangle : Rectangle, colorbg : Color, action, text : Text):
+        super().__init__(rectangle, colorbg, action)
         self.text = text
+        text.align = "center"
+        self.text.x = rectangle.x + rectangle.w/2
+        self.text.y = rectangle.y + rectangle.h/2
 
-class Definitions:
-    gravity = 0.001
-    velocity = 0.2
-
-
-class Window():
+class Window:
     width = 480
     height = 720
-    dimensions = (width, height)
-    center = (dimensions[0]/2, dimensions[1]/2)
-    background = Color(255,255,100)
+    center = (width/2, height/2)
+    background = Color(255, 255, 100)
