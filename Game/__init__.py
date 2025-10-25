@@ -1,8 +1,9 @@
-from Utils import Rectangle, Color, Button, TextButton, Text, Point, Window
+from Utils import Rectangle, Color, Button, TextButton, ImageButton, Image, Text, Point, Window
 from .Cenário.Pipe import Pipe, HardPipe
 from .Cenário.Ground import Ground
 from .Bird import Bird
 import random
+
 
 class Game():
     def __init__(self):
@@ -19,7 +20,10 @@ class Game():
         self.scoreText = Text("Pontuação: 0", Color(0,0,0))
 
         #Buttons
-        self.pauseButton = Button(Rectangle(Window.width - 50, 0, 50, 50), Color(0, 0, 0), self.pause)
+        playButtonRectangle  = Rectangle(Window.center[0]- 50, Window.center[1] - 50, 100, 100)
+        self.playButton = ImageButton(playButtonRectangle, Window.background, self.pause, Image("Images/play.png", playButtonRectangle))
+        pauseButtonRectangle = Rectangle(Window.width - 20, 0, 20, 20)
+        self.pauseButton = ImageButton(pauseButtonRectangle, Window.background, self.pause, Image("Images/pause.png", pauseButtonRectangle))
         self.restartButton = TextButton(Rectangle(Window.center[0] - 50, Window.center[1] - 50, 100, 50), Color(0, 0, 0), self.restart, Text("Reiniciar", Color(255,255,255)))
         self.exitButton = TextButton(Rectangle(Window.center[0] - 50, Window.center[1] + 10, 100, 50), Color(0, 0, 0), self.exit, Text("Sair", Color(255,255,255)))
 
@@ -35,6 +39,8 @@ class Game():
             return [self.restartButton, self.exitButton]
         elif self.state == "running":
             return [self.pauseButton]
+        elif self.state == "paused":
+            return [self.playButton]
 
     def exit(self):
         self.state = "exit"
@@ -43,27 +49,29 @@ class Game():
         self.state = "gameover"
 
     def pause(self):
-        self.state = "paused"
+        if self.state == "running":
+            self.state = "paused"
+        elif self.state == "paused":
+            self.state = "running"
 
     def renderables(self):
         renderables = []
 
-        if(self.state == "gameover"):
-            renderables.extend(self.buttons())
+        if self.state == "gameover":
             score = self.scoreText
             score.size = Text.BIG
             score.x = Window.width/2
             score.y = 100
             score.align = "center"
             renderables.append(score)
-            return renderables
-
-        renderables.extend(self.birds)
-        renderables.extend(self.pipes)
+        elif self.state == "running":
+            renderables.extend(self.birds)
+            renderables.extend(self.pipes)
+            renderables.append(self.scoreText)
+            renderables.append(self.ground.image)
+        elif self.state == "paused":
+            pass
         renderables.extend(self.buttons())
-        renderables.append(self.scoreText)
-        renderables.append(self.ground.image)
-
         return renderables
 
     def update(self, mouse : Point, click, key):

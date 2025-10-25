@@ -74,6 +74,11 @@ class TextButton(Button):
         self.text.x = rectangle.x + rectangle.w/2
         self.text.y = rectangle.y + rectangle.h/2
 
+class ImageButton(Button):
+    def __init__(self, rectangle : Rectangle, color : Color, action, image : Image):
+        super().__init__(rectangle, color, action)
+        self.image = image
+
 class Window:
     width = 480
     height = 720

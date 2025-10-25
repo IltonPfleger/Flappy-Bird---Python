@@ -1,4 +1,4 @@
-from Utils import Rectangle, Color, Button, Text, TextButton, Window, Point, Image
+from Utils import Rectangle, Color, Button, Text, TextButton, ImageButton, Window, Point, Image
 from Game import Game, Bird
 from Game.Cenário.Pipe import Pipe, HardPipe
 from Game.Cenário.Ground import Ground
@@ -15,6 +15,8 @@ class Interface():
         self.load(Image(Ground.sprite, Rectangle(0, 0, Window.width, Ground.height)))
         self.game = Game()
         self.load(Image(Bird.sprite, self.game.birds[0].rectangle))
+        self.load(Image("Images/pause.png", self.game.pauseButton.rectangle))
+        self.load(Image("Images/play.png", self.game.playButton.rectangle))
 
     def load(self, image : Image):
         self.sprites[image.dir] = pygame.transform.scale(pygame.image.load(image.dir), (image.rectangle.w, image.rectangle.h))
@@ -31,9 +33,13 @@ class Interface():
     def button(self, b : Button):
         self.rectangle(b.rectangle, b.color)
 
-    def textButton(self, b: button):
+    def textButton(self, b: Button):
         self.rectangle(b.rectangle, b.color)
         self.text(b.text)
+        
+    def imageButton(self, b : Button):
+        self.image(b.image)
+
 
     def text(self, t : Text):
         font = pygame.font.SysFont(None, t.size)
@@ -87,6 +93,8 @@ class Interface():
                     self.image(obj)
                 if isinstance(obj, TextButton):
                     self.textButton(obj)
+                if isinstance(obj, ImageButton):
+                    self.imageButton(obj)
 
 
     def run(self):

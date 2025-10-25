@@ -2,7 +2,7 @@ from Utils import Rectangle, Color, Window
 import random
 
 class Pipe():
-    velocity = 0.20
+    velocity = 0.17
     width = 90
     aperture = 150
     capstone_diff = 15
@@ -31,7 +31,7 @@ class Pipe():
 class HardPipe(Pipe) :
     def __init__(self):
         super().__init__()
-        self.vvelocity = (random.random() * 0.5 - 0.25)
+        self.vvelocity = (random.random() * 0.4 - 0.2)
 
     def update(self):
         super().update()
