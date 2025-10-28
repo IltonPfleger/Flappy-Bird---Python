@@ -1,7 +1,7 @@
 from Utils import Rectangle, Color, Button, TextButton, ImageButton, Image, Text, Point, Window
 from .Cenário.Pipe import Pipe, HardPipe
 from .Cenário.Ground import Ground
-from .Bird import Bird
+from .Bird import Bird, Birds
 import random
 
 
@@ -9,15 +9,10 @@ class Game():
     def __init__(self):
         self.state = "running"
         self.score = 0
-        self.nbirds = 1
         self.ground = Ground()
         self.pipes = [Pipe()]
-        self.birds = []
+        self.birds = Birds()
         self.died = []
-        self.create_birds()
-
-        #Labels
-        self.scoreText = Text("Pontuação: 0", Color(0,0,0))
 
         #Buttons
         playButtonRectangle  = Rectangle(Window.center[0]- 50, Window.center[1] - 50, 100, 100)
@@ -28,11 +23,11 @@ class Game():
         self.exitButton = TextButton(Rectangle(Window.center[0] - 50, Window.center[1] + 10, 100, 50), Color(0, 0, 0), self.exit, Text("Sair", Color(255,255,255)))
 
     def restart(self):
-        self.__init__()
-
-    def create_birds(self):
-        for i in range(self.nbirds):
-            self.birds.append(Bird())
+        self.state = "running"
+        self.score = 0
+        self.pipes = [Pipe()]
+        self.birds.regenerate(self.died)
+        self.died = []
 
     def buttons(self):
         if(self.state == "gameover"):
@@ -47,6 +42,7 @@ class Game():
 
     def gameover(self):
         self.state = "gameover"
+        self.restart()
 
     def pause(self):
         if self.state == "running":
@@ -58,17 +54,16 @@ class Game():
         renderables = []
 
         if self.state == "gameover":
-            score = self.scoreText
-            score.size = Text.BIG
-            score.x = Window.width/2
-            score.y = 100
-            score.align = "center"
+            score = Text(f"Pontuação: {self.score}", Color(0,0,0), Text.BIG, Window.width/2, 100, "center")
             renderables.append(score)
         elif self.state == "running":
             renderables.extend(self.birds)
             renderables.extend(self.pipes)
-            renderables.append(self.scoreText)
             renderables.append(self.ground.image)
+            score = Text(f"Pontuação: {self.score}", Color(0,0,0))
+            alive = Text(f"Vivos: {len(self.birds)}", Color(0,0,0), Text.NORMAL, 0, 20)
+            renderables.append(score)
+            renderables.append(alive)
         elif self.state == "paused":
             pass
         renderables.extend(self.buttons())
@@ -82,31 +77,29 @@ class Game():
         if self.state in ["paused","gameover"]:
             return True
 
+        self.score += 0.001
         if(self.pipes[-1].rectangles[0].x < Window.center[0] - Pipe.width):
             self.pipes.append(HardPipe() if random.random() > 0.5 else Pipe())
         if(self.pipes[0].rectangles[0].x + Pipe.width < 0):
-            self.score += 1
-            self.scoreText.text = "Pontuação: " + str(self.score)
+            self.score += 100
             del self.pipes[0]
         for pipe in self.pipes:
             pipe.update()
 
         for bird in self.birds:
-            if not bird.alive:
-                continue
-            bird.update(click or key)
+            pipe = self.pipes[0]
+            bird.update(pipe.rectangles[0].x, pipe.seed, click or key)
             die = False
-            for rectangle in self.pipes[0].rectangles:
+            for rectangle in pipe.rectangles:
                 if rectangle.colliderect(bird.rectangle):
                     die = True
                     break
-                if bird.rectangle.y + bird.rectangle.h > Window.height - Ground.height:
+                if bird.rectangle.y < 0 or bird.rectangle.y + bird.rectangle.h > Window.height - Ground.height:
                     die = True
-                if die:
-                    break
+
             if die:
                 self.birds.remove(bird)
-                bird.die()
+                bird.die(self.score)
                 self.died.append(bird)
 
         if self.state == "exit":

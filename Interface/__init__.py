@@ -13,7 +13,7 @@ class Interface():
         self.key = False
         self.sprites = {}
         self.load(Image(Ground.sprite, Rectangle(0, 0, Window.width, Ground.height)))
-        self.game = Game()
+        self.game : Game = Game()
         self.load(Image(Bird.sprite, self.game.birds[0].rectangle))
         self.load(Image("Images/pause.png", self.game.pauseButton.rectangle))
         self.load(Image("Images/play.png", self.game.playButton.rectangle))
@@ -52,7 +52,7 @@ class Interface():
         self.screen.blit(surface, rectangle)
 
     def bird(self, bird : Bird):
-        angled = pygame.transform.rotate(self.sprites[Bird.sprite], bird.velocity * 10)
+        angled = pygame.transform.rotate(self.sprites[Bird.sprite], bird.velocity * -15)
         rectangle = angled.get_rect(center=pygame.Rect(bird.rectangle.tuple).center)
         self.image(Image("", rectangle), angled, rectangle)
 

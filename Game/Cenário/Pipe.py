@@ -2,7 +2,7 @@ from Utils import Rectangle, Color, Window
 import random
 
 class Pipe():
-    velocity = 0.17
+    velocity = 0.15
     width = 90
     aperture = 150
     capstone_diff = 15
