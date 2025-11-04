@@ -86,11 +86,17 @@ class Game():
         for pipe in self.pipes:
             pipe.update()
 
+        current = None
+        for pipe in self.pipes:
+            if(pipe.rectangles[0].x + pipe.width > self.birds[0].rectangle.x):
+                current = pipe
+                break
+
+
         for bird in self.birds:
-            pipe = self.pipes[0]
-            bird.update(pipe.rectangles[0].x, pipe.seed, click or key)
+            bird.update(current.rectangles[0].x, current.seed, click or key)
             die = False
-            for rectangle in pipe.rectangles:
+            for rectangle in current.rectangles:
                 if rectangle.colliderect(bird.rectangle):
                     die = True
                     break

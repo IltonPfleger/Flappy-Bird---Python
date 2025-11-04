@@ -39,6 +39,7 @@ class HardPipe(Pipe) :
         self.rectangles[Pipe.Enum.Capstone_Top].y += self.vvelocity
         self.rectangles[Pipe.Enum.Bottom].y += self.vvelocity
         self.rectangles[Pipe.Enum.Capstone_Bottom].y += self.vvelocity
+        self.seed += self.vvelocity
 
         if(self.rectangles[Pipe.Enum.Capstone_Bottom].y > Window.height or self.rectangles[Pipe.Enum.Capstone_Top].y < 0):
             self.vvelocity *= -1

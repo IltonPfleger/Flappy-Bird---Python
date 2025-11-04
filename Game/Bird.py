@@ -39,23 +39,23 @@ class Bird:
         new.brain = copy.copy(self.brain)
         return new
 
-    def mutate(self):
+    def mutate(self, rate):
         for i in self.brain.weights:
             for j in i:
                 for k in j:
-                    if random.random() < random.random():
-                        k += random.random() - 0.5
+                    if rate < random.random():
+                        k += random.random() - 1
         for i in self.brain.baiases:
             for j in i:
-                if random.random() < random.random():
-                    k += random.random() - 0.5
+                if rate < random.random():
+                    k += random.random() - 1
         return self
 
     import random
 
 
 class Birds:
-    def __init__(self, nbirds=100, mutation_rate=0.8, elite_rate=0.1, fresh_rate=0.1):
+    def __init__(self, nbirds=50, mutation_rate=0.5, elite_rate=0.3, fresh_rate=0.1):
         self.nbirds = nbirds
         self.mutation_rate = mutation_rate
         self.fresh_rate = fresh_rate
@@ -88,7 +88,7 @@ class Birds:
             offspring = parent.clone()
 
             if random.random() < self.mutation_rate:
-                offspring.mutate()
+                offspring.mutate(self.mutation_rate)
 
             new_population.append(offspring)
 
