@@ -5,18 +5,20 @@ import copy
 import numpy as np
 
 class Bird:
+    x = Window.center[0]/5
     gravity = 0.001
     strength = gravity*1000/3
     sprite = "Images/bird.png"
     architecture = [2,4,1]
 
-    def __init__(self):
+    def __init__(self, AI = True):
         self.alive = True
-        self.rectangle = Rectangle(Window.center[0]/5, Window.center[1], 40, 30)
+        self.rectangle = Rectangle(Bird.x, Window.center[1], 40, 30)
         self.velocity = 0
         self.brain = NN(Bird.architecture)
         self.score = 0
         self.fit = 0
+        self.AI = AI
 
     def fly(self):
         self.velocity = -Bird.strength
@@ -26,10 +28,12 @@ class Bird:
         self.alive = False
 
     def update(self, x, y, click: bool):
-        if self.brain.feed([(self.rectangle.x - x)/Window.width, (self.rectangle.y - y)/Window.height]) > 0:
-            self.fly()
-        if click:
-            self.fly()
+        if not self.AI:
+            if click:
+                self.fly()
+        else:
+            if self.brain.feed([(self.rectangle.x - x)/Window.width, (self.rectangle.y - y)/Window.height]) > 0:
+                self.fly()
         y = self.rectangle.y + self.velocity
         self.velocity += Bird.gravity
         self.rectangle.y = y
@@ -55,27 +59,46 @@ class Bird:
 
 
 class Birds:
-    def __init__(self, nbirds=50, mutation_rate=0.5, elite_rate=0.3, fresh_rate=0.1):
+    def __init__(self, AI, nbirds=50, mutation_rate=0.4, elite_rate=0.4, fresh_rate=0.2):
         self.nbirds = nbirds
         self.mutation_rate = mutation_rate
         self.fresh_rate = fresh_rate
         self.elite_rate = elite_rate
-        self.birds = [Bird() for _ in range(self.nbirds)]
+        self.birds = [Bird(False)]
+        self.deads = []
+        self.AI = AI
+        if self.AI:
+            while len(self.birds) < self.nbirds:
+                self.birds.append(Bird())
 
-    def regenerate(self, deads):
-        scores = np.array([bird.score for bird in deads])
+    def kill(self, bird, score):
+        self.birds.remove(bird)
+        bird.die(score)
+        self.deads.append(bird)
+
+    def killall(self, score):
+        for bird in self.birds:
+            self.kill(bird, score)
+
+
+    def regenerate(self):
+        new_population = []
+        new_population.append(Bird(False))
+        if not self.AI:
+            self.birds = new_population
+            return
+        scores = np.array([bird.score for bird in self.deads])
         total_score = scores.sum()
 
         if total_score == 0:
-            weights = np.ones(len(deads)) / len(deads)
+            weights = np.ones(len(self.deads)) / len(self.deads)
         else:
             weights = scores / total_score
 
         sorted_indices = np.argsort(scores)[::-1]
-        sorted_deads = [deads[i] for i in sorted_indices]
+        sorted_deads = [self.deads[i] for i in sorted_indices]
         sorted_weights = weights[sorted_indices]
 
-        new_population = []
 
         elite_count = max(1, int(self.elite_rate * self.nbirds))
         new_population.extend(bird.clone() for bird in sorted_deads[:elite_count])
