@@ -3,12 +3,14 @@ from .Cenário.Pipe import Pipe, HardPipe
 from .Cenário.Ground import Ground
 from .Bird import Bird, Birds
 import random
+import os
 
 
 class Game():
     def __init__(self):
-        self.state = "running"
-        self.score = 0
+        self.state = "start"
+        self.score = self.load_max_score()
+        self.max_score = 0
         self.ground = Ground()
         self.pipes = [Pipe()]
         self.AI = True
@@ -23,6 +25,16 @@ class Game():
         self.restartButton = TextButton(Rectangle(Window.center[0] - 50, Window.center[1] - 50, 100, 50), Color(0, 0, 0), self.restart, Text("Reiniciar", Color(255,255,255)))
         self.exitButton = TextButton(Rectangle(Window.center[0] - 50, Window.center[1] + 100, 100, 50), Color(0, 0, 0), self.exit, Text("Sair", Color(255,255,255)))
         self.killAllButton = TextButton(Rectangle(Window.center[0] - 70, Window.center[1] + 160, 140, 50), Color(0, 0, 0), self.killall, Text("Matar Todos", Color(255,255,255)))
+
+    def load_max_score(self):
+        if os.path.exists("max_score.txt"):
+            with open("max_score.txt", "r") as file:
+                return int(file.read())
+        return 0
+
+    def save_max_score(self):
+        with open("max_score.txt", "w") as file:
+            file.write(str(self.max_score))
 
     def restart(self):
         self.state = "running"
@@ -41,11 +53,17 @@ class Game():
             return [self.pauseButton]
         elif self.state == "paused":
             return [self.playButton, self.exitButton, self.killAllButton]
+        elif self.state == "start":
+            return [self.playButton]
 
     def exit(self):
+        self.save_max_score()
         self.state = "exit"
 
     def gameover(self):
+        if self.score > self.max_score:
+            self.max_score = self.score
+            self.save_max_score()
         self.state = "gameover"
         self.restart()
 
@@ -53,6 +71,8 @@ class Game():
         if self.state == "running":
             self.state = "paused"
         elif self.state == "paused":
+            self.state = "running"
+        elif self.state == "start":
             self.state = "running"
 
     def renderables(self):
@@ -71,6 +91,9 @@ class Game():
             renderables.append(alive)
         elif self.state == "paused":
             pass
+        elif self.state == "start":
+            score = Text(f"Pontuação Máxima: {int(self.score)}", Color(0,0,0), Text.BIG, Window.width/2, 200, "center")
+            renderables.append(score)
         renderables.extend(self.buttons())
         return renderables
 
@@ -112,7 +135,7 @@ class Game():
 
         if self.state == "exit":
             return False
- 
+
         if len(self.birds) == 0:
             self.gameover()
 
